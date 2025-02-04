@@ -21,7 +21,10 @@ public class WeatherApp {
     private static final String BASE_URL = "https://api.openweathermap.org/data/2.5/weather";
     private static final CityRepository cityRepository = Factory.getRepository();
     public static void getWeather(String city) {
-        DtoWeather dto = cityRepository.findByName(city);
+        //TODO возможно добавить google-cloud-translate для ввода города на английском
+        String output = city.substring(0, 1).toUpperCase() + city.substring(1);
+
+        DtoWeather dto = cityRepository.findByName(output);
 
         if (dto != null){
            printWeatherInfo(MapperWeather.dtoToResponse(dto));

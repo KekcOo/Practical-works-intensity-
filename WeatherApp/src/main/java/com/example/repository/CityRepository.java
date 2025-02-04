@@ -31,8 +31,8 @@ public class CityRepository {
             statement.executeUpdate();
             log.info("Данные о погоде успешно добавлены!");
 
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (SQLException e) {
+            log.info("Ошибка в CityRepository->insertData{}", e.getMessage());
         }
     }
 
@@ -49,7 +49,6 @@ public class CityRepository {
             }
 
             do {
-                long id = resultSet.getLong("id");
                 weather.setCityName(resultSet.getString("city_name"));
                 weather.setTemperature(resultSet.getDouble("temperature"));
                 weather.setDescription(resultSet.getString("description"));
@@ -59,7 +58,7 @@ public class CityRepository {
 
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.info("Ошибка в CityRepository->findByName{}", e.getMessage());
         }
         return weather;
     }

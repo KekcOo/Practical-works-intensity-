@@ -1,13 +1,13 @@
 package com.example.itil;
 
-import com.example.mapper.DtoWeather;
+
 import lombok.extern.slf4j.Slf4j;
 
 import java.sql.*;
 
 @Slf4j
 public class InitDb {
-
+    //TODO вынести в application.yml
     private static final String DB_URL = "jdbc:postgresql://localhost:5432/weatherdb";
     private static final String DB_USER = "root";
     private static final String PASSWORD = "root";
@@ -17,7 +17,7 @@ public class InitDb {
         String createTableSQL = """
                    create table IF NOT EXISTS weather_data
                   (id BIGSERIAL PRIMARY KEY,
-                     city_name VARCHAR(100) NOT NULL,
+                     city_name VARCHAR(100) NOT NULL UNIQUE,
                     temperature DECIMAL(5, 2) NOT NULL,
                     description VARCHAR(255) NOT NULL,
                     humidity INT NOT NULL,
