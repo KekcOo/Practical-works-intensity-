@@ -1,8 +1,10 @@
 package com.example.model;
 
-import lombok.Getter;
+import lombok.Data;
 
-@Getter
+
+
+@Data
 public class Weather {
     private String description;
 

@@ -1,0 +1,13 @@
+services:
+  postgres:
+    image: postgres:12.3
+    environment:
+      POSTGRES_DB: weatherdb
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+    ports:
+      - "5432:5432"
+    volumes:
+      - ~/apps/postgres:/var/lib/postgresql/data
+volumes:
+  postgres_data:
