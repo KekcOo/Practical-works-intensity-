@@ -20,14 +20,15 @@ public class WeatherApp {
     private static final String API_KEY = "f58eff2c05c09165deca1fe1d5b87d01";
     private static final String BASE_URL = "https://api.openweathermap.org/data/2.5/weather";
     private static final CityRepository cityRepository = Factory.getRepository();
+
     public static void getWeather(String city) {
         //TODO возможно добавить google-cloud-translate для ввода города на английском
         String output = city.substring(0, 1).toUpperCase() + city.substring(1);
 
         DtoWeather dto = cityRepository.findByName(output);
 
-        if (dto != null){
-           printWeatherInfo(MapperWeather.dtoToResponse(dto));
+        if (dto != null) {
+            printWeatherInfo(MapperWeather.dtoToResponse(dto));
             return;
         }
         OkHttpClient client = new OkHttpClient();
@@ -59,6 +60,7 @@ public class WeatherApp {
 
 
     }
+
     private static void printWeatherInfo(WeatherResponse weatherResponse) {
 
 

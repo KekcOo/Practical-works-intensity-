@@ -1,6 +1,7 @@
 package com.example.repository;
 
 
+import com.example.factory.Factory;
 import com.example.mapper.DtoWeather;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -11,15 +12,13 @@ import java.sql.*;
 @Log4j2
 public class CityRepository {
 
-    private static final String DB_URL = "jdbc:postgresql://localhost:5432/weatherdb";
-    private static final String DB_USER = "root";
-    private static final String PASSWORD = "root";
+
 
     public void insertData(DtoWeather weather) {
         String insertSQL = "INSERT INTO weather_data (city_name, temperature, description, humidity, pressure) " +
                 "VALUES (?, ?, ?, ?, ?)";
 
-        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, PASSWORD);
+        try (Connection connection = Factory.open();
              PreparedStatement statement = connection.prepareStatement(insertSQL)) {
 
             statement.setString(1, weather.getCityName());
@@ -39,7 +38,7 @@ public class CityRepository {
     public DtoWeather findByName(String cityName) {
         String selectSQL = "SELECT * FROM weather_data WHERE city_name = ?";
         DtoWeather weather = new DtoWeather();
-        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, PASSWORD);
+        try (Connection connection = Factory.open();
              PreparedStatement statement = connection.prepareStatement(selectSQL)) {
             statement.setString(1, cityName);
             ResultSet resultSet = statement.executeQuery();

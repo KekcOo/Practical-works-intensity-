@@ -1,0 +1,3 @@
+db_url: jdbc:postgresql://localhost:5432/weatherdb
+db_user: root
+db_pwd:  root
