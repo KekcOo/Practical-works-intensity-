@@ -1,6 +1,7 @@
 package com.example.itil;
 
 
+import com.example.entity.WeatherEntity;
 import com.example.factory.Factory;
 import com.example.mapper.DtoWeather;
 import com.example.mapper.MapperWeather;
@@ -12,8 +13,10 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+import javax.swing.text.html.parser.Entity;
 import java.io.IOException;
 import java.util.Objects;
+import java.util.Optional;
 
 @Slf4j
 public class WeatherApp {
@@ -24,10 +27,9 @@ public class WeatherApp {
     public static void getWeather(String city) {
         //TODO возможно добавить google-cloud-translate для ввода города на английском
         String output = city.substring(0, 1).toUpperCase() + city.substring(1);
+        Optional<WeatherEntity> entity = cityRepository.findByNameHibernate(output);
 
-        DtoWeather dto = cityRepository.findByName(output);
-
-        if (dto != null) {
+        if (entity != null) {
             printWeatherInfo(MapperWeather.dtoToResponse(dto));
             return;
         }
@@ -52,7 +54,7 @@ public class WeatherApp {
 
 
             printWeatherInfo(weatherResponse);
-            cityRepository.insertData(MapperWeather.responseToDto(weatherResponse));
+            cityRepository.insertDataHibernate(MapperWeather.responseToDto(weatherResponse));
         } catch (IOException e) {
             log.info("Ошибка выполнения запроса: {}", e.getMessage());
 
