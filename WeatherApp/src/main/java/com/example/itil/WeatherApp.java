@@ -3,7 +3,7 @@ package com.example.itil;
 
 import com.example.entity.WeatherEntity;
 import com.example.factory.Factory;
-import com.example.mapper.DtoWeather;
+
 import com.example.mapper.MapperWeather;
 import com.example.repository.CityRepository;
 import com.example.response.WeatherResponse;
@@ -13,8 +13,9 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-import javax.swing.text.html.parser.Entity;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -24,19 +25,36 @@ public class WeatherApp {
     private static final String BASE_URL = "https://api.openweathermap.org/data/2.5/weather";
     private static final CityRepository cityRepository = Factory.getRepository();
 
-    public static void getWeather(String city) {
-        //TODO возможно добавить google-cloud-translate для ввода города на английском
+    public static WeatherEntity getWeather(String city) {
+
         String output = city.substring(0, 1).toUpperCase() + city.substring(1);
         Optional<WeatherEntity> entity = cityRepository.findByNameHibernate(output);
-
-        if (entity != null) {
-            printWeatherInfo(MapperWeather.dtoToResponse(dto));
-            return;
+        if (entity.isPresent()) {
+//            long hoursBetween = Math.abs(ChronoUnit.HOURS.between(entity.get().getTime(), LocalDateTime.now()));
+//            if(hoursBetween<=1){
+                return entity.get();
         }
+        try {
+            WeatherResponse weatherResponse = fetchWeatherFromApi(output);
+            if (weatherResponse == null) {
+                log.error("Не удалось получить погоду для города: {}", output);
+                return null;
+            }
+
+
+            cityRepository.insertDataHibernate(weatherResponse);
+
+            return MapperWeather.responseToEntity(weatherResponse);
+
+        } catch (IOException e) {
+            log.error("Ошибка при выполнении запроса к API: {}", e.getMessage(), e);
+            return null;
+        }
+    }
+
+    private static WeatherResponse fetchWeatherFromApi(String city) throws IOException {
         OkHttpClient client = new OkHttpClient();
-
         String url = String.format("%s?q=%s&appid=%s&units=metric&lang=ru", BASE_URL, city, API_KEY);
-
 
         Request request = new Request.Builder()
                 .url(url)
@@ -44,38 +62,15 @@ public class WeatherApp {
 
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
-                log.info("Ошибка запроса: {}", response.body());
-                return;
+                log.error("Ошибка запроса к API: HTTP Code {}", response.code());
+                return null;
             }
 
             String responseBody = Objects.requireNonNull(response.body()).string();
             Gson gson = new Gson();
-            WeatherResponse weatherResponse = gson.fromJson(responseBody, WeatherResponse.class);
-
-
-            printWeatherInfo(weatherResponse);
-            cityRepository.insertDataHibernate(MapperWeather.responseToDto(weatherResponse));
-        } catch (IOException e) {
-            log.info("Ошибка выполнения запроса: {}", e.getMessage());
-
+            return gson.fromJson(responseBody, WeatherResponse.class);
         }
-
-
     }
 
-    private static void printWeatherInfo(WeatherResponse weatherResponse) {
 
-
-        if (weatherResponse == null || weatherResponse.getMain() == null) {
-            log.info("Не удалось получить данные о погоде.");
-            return;
-        }
-
-        log.info("Город: {}", weatherResponse.getName());
-        log.info("Температура: {} °C", weatherResponse.getMain().getTemp());
-        log.info("Описание: {}", weatherResponse.getWeather()[0].getDescription());
-        log.info("Влажность: {}%", weatherResponse.getMain().getHumidity());
-        log.info("Давление: {} гПа", weatherResponse.getMain().getPressure());
-
-    }
 }
